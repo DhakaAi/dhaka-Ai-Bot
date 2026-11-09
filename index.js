@@ -9,7 +9,7 @@ app.use(express.json());
 // Gemini AI Setup
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-pro",
     systemInstruction: `তুমি 'Dhaka AI' (ঢাকা এআই), ঢাকা শহরের সাধারণ মানুষের দৈনন্দিন সমস্যার সমাধানকারী একজন স্মার্ট ও বন্ধুসুলভ লোকাল অ্যাসিস্ট্যান্ট।
 তোমার কাজ:
 ১. ঢাকার লোকাল বাস রুট, মেট্রোরেল, সিএনজি ভাড়া এবং শর্টকাট রাস্তা সম্পর্কে সঠিক পরামর্শ দেওয়া।
