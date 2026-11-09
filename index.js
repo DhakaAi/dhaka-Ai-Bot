@@ -1,13 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
-const { GoogleGenerativeAI } = require('@google/gemini-pro');
+const { gemini-pro } = require('@google/gemini-pro');
 
 const app = express();
 app.use(express.json());
 
 // Gemini AI Setup
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = gemini-pro(process.env.GEMINI_API_KEY);
 const model = gemini-pro({
     model: "gemini-pro",
     systemInstruction: `তুমি 'Dhaka AI' (ঢাকা এআই), ঢাকা শহরের সাধারণ মানুষের দৈনন্দিন সমস্যার সমাধানকারী একজন স্মার্ট ও বন্ধুসুলভ লোকাল অ্যাসিস্ট্যান্ট।
