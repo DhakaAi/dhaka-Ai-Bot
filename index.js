@@ -4,6 +4,8 @@ const axios = require('axios');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
+
+// Very Important: Express JSON middleware must be right before routes
 app.use(express.json());
 
 // Gemini AI Setup
@@ -15,7 +17,7 @@ app.get('/', (req, res) => {
     res.status(200).send('Dhaka AI WhatsApp Bot Server is Running Successfully!');
 });
 
-// ১. WhatsApp Webhook Verification
+// ১. WhatsApp Webhook Verification (GET)
 app.get('/webhook', (req, res) => {
     const verify_token = process.env.VERIFY_TOKEN || 'dhaka_ai_secret_123';
     const mode = req.query['hub.mode'];
@@ -30,12 +32,16 @@ app.get('/webhook', (req, res) => {
     }
 });
 
-// ২. ইউজারের মেসেজ রিসিভ এবং উত্তর পাঠানো
+// ২. WhatsApp Webhook Message Receiver (POST)
 app.post('/webhook', async (req, res) => {
+    // Immediately send 200 OK to Meta so it doesn't timeout
+    res.sendStatus(200);
+
     try {
         const body = req.body;
+        console.log("Incoming Webhook Payload:", JSON.stringify(body, null, 2));
 
-        if (body.object) {
+        if (body.object === 'whatsapp_business_account') {
             const entry = body.entry?.[0];
             const change = entry?.changes?.[0];
             const value = change?.value;
@@ -70,10 +76,8 @@ app.post('/webhook', async (req, res) => {
                 console.log("Reply sent successfully to WhatsApp!");
             }
         }
-        res.sendStatus(200);
     } catch (error) {
         console.error("Error processing message:", error.response?.data || error.message);
-        res.sendStatus(200);
     }
 });
 
