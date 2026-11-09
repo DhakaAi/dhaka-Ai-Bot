@@ -1,19 +1,21 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
-const { GoogleGenAI } = require('@google/genai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const app = express();
 app.use(express.json());
 
-// Gemini AI Setup (Google GenAI SDK)
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-const systemInstruction = `তুমি 'Dhaka AI' (ঢাকা এআই), ঢাকা শহরের সাধারণ মানুষের দৈনন্দিন সমস্যার সমাধানকারী একজন স্মার্ট ও বন্ধুসুলভ লোকাল অ্যাসিস্ট্যান্ট।
+// Gemini AI Setup
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash",
+    systemInstruction: `তুমি 'Dhaka AI' (ঢাকা এআই), ঢাকা শহরের সাধারণ মানুষের দৈনন্দিন সমস্যার সমাধানকারী একজন স্মার্ট ও বন্ধুসুলভ লোকাল অ্যাসিস্ট্যান্ট।
 তোমার কাজ:
 ১. ঢাকার লোকাল বাস রুট, মেট্রোরেল, সিএনজি ভাড়া এবং শর্টকাট রাস্তা সম্পর্কে সঠিক পরামর্শ দেওয়া।
 ২. কাঁচাবাজারের দরদাম, বাসা ভাড়া (To-Let), হাসপাতাল, ডাক্তার ও জরুরি সার্ভিস সম্পর্কে তথ্য দিয়ে সাহায্য করা।
-৩. ইউজার বাংলা বা বাংলিশ (Banglish) যে ভাষাতেই মেসেজ দিক, তুমি সহজ, সুন্দর ও সংক্ষেপে (৩-৪ লাইনের মধ্যে) উত্তর দেবে।`;
+৩. ইউজার বাংলা বা বাংলিশ (Banglish) যে ভাষাতেই মেসেজ দিক, তুমি সহজ, সুন্দর ও সংক্ষেপে (৩-৪ লাইনের মধ্যে) উত্তর দেবে।`
+});
 
 // ফ্রি ইউজারদের মেসেজ লিমিট ট্র্যাক করার মেমোরি (দৈনিক ৩টি ফ্রি মেসেজ)
 const userUsage = new Map();
@@ -80,15 +82,8 @@ app.post('/webhook', async (req, res) => {
                 if (!limitStatus.allowed) {
                     replyText = `আপনার আজকের ${FREE_DAILY_LIMIT}টি ফ্রি প্রশ্নের লিমিট শেষ হয়ে গেছে! 🚀\n\nআনলিমিটেড প্রশ্ন করতে, রিয়েল-টাইম বাসা ভাড়ার অ্যালার্ট এবং জরুরি নম্বর পেতে আমাদের প্রিমিয়াম প্ল্যান (মাত্র ৯৯ টাকা/মাস) সাবস্ক্রাইব করুন:\n👉 ${PAYMENT_LINK}`;
                 } else {
-                    // Gemini 2.5/2.0 Flash call using Google GenAI SDK
-                    const response = await ai.models.generateContent({
-                        model: 'gemini-2.5-flash',
-                        contents: userText,
-                        config: {
-                            systemInstruction: systemInstruction,
-                        }
-                    });
-                    const aiReply = response.text();
+                    const result = await model.generateContent(userText);
+                    const aiReply = result.response.text();
                     replyText = `${aiReply}\n\n_(আজকের বাকি ফ্রি মেসেজ: ${limitStatus.remaining}টি)_`;
                 }
 
